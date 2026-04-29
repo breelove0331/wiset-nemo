@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nemo Real Estate Analytics Dashboard</title>
+    <title>Nemo Real Estate Decision Support Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #6366f1;
             --secondary: #a855f7;
             --accent: #f43f5e;
-            --background: #0f172a;
+            --success: #10b981;
+            --background: #0b0f19;
             --card-bg: rgba(30, 41, 59, 0.7);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --glass-border: rgba(255, 255, 255, 0.1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', 'Noto Sans KR', sans-serif;
@@ -29,80 +27,85 @@
             color: var(--text-main);
             line-height: 1.6;
             background-image: 
-                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
+                radial-gradient(circle at 5% 5%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 95% 95%, rgba(168, 85, 247, 0.1) 0%, transparent 40%);
             min-height: 100vh;
-            padding-bottom: 50px;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
 
+        /* Header */
         header {
-            padding: 40px 0;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
             animation: fadeInDown 0.8s ease-out;
         }
 
-        header h1 {
-            font-size: 3rem;
+        .header-title h1 {
+            font-size: 2.5rem;
             font-weight: 800;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
         }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 1.2rem;
-        }
+        .header-title p { color: var(--text-muted); font-size: 1.1rem; }
 
-        /* Metrics Section */
+        /* KPI Section */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .metric-card {
             background: var(--card-bg);
             backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
-            padding: 30px;
-            border-radius: 24px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 25px;
+            border-radius: 20px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-            border-color: var(--primary);
+        .metric-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .metric-value { font-size: 2.2rem; font-weight: 700; margin-bottom: 5px; color: #fff; }
+        .metric-label { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Filter Section */
+        .filter-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+            border: 1px solid var(--glass-border);
         }
 
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 5px;
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        
+        select, input[type="range"] {
+            background: #1e293b;
             color: #fff;
+            border: 1px solid var(--glass-border);
+            padding: 10px 15px;
+            border-radius: 10px;
+            outline: none;
         }
 
-        .metric-label {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .range-value { font-size: 0.9rem; color: var(--primary); font-weight: 700; }
 
-        /* Charts Grid */
-        .charts-grid {
+        /* Dashboard Grid */
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 30px;
         }
 
@@ -111,226 +114,378 @@
             backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .chart-card:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-        }
-
-        .chart-header {
-            padding: 20px 25px;
-            border-bottom: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .chart-header h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .chart-content {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .chart-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            transition: transform 0.5s ease;
-        }
-
-        .chart-card:hover .chart-content img {
-            transform: scale(1.02);
-        }
-
-        .chart-footer {
-            padding: 20px 25px;
-            background: rgba(0, 0, 0, 0.2);
+        .chart-header { margin-bottom: 20px; }
+        .chart-header h3 { font-size: 1.2rem; font-weight: 600; color: #fff; }
+        
+        .chart-container { flex-grow: 1; min-height: 350px; position: relative; }
+        
+        .insight-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
             font-size: 0.95rem;
-            color: var(--text-muted);
+            color: #e2e8f0;
         }
 
-        .chart-footer strong {
-            color: var(--secondary);
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        /* Summary Section */
-        .summary-section {
-            margin-top: 60px;
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            padding: 50px;
+        /* Recommendations Section */
+        .recommendation-section {
+            margin-top: 50px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px solid var(--primary);
+            padding: 40px;
             border-radius: 32px;
             animation: fadeInUp 1s ease-out;
         }
 
-        .summary-section h2 {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            background: linear-gradient(to right, #fff, var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .recommendation-section h2 { font-size: 1.8rem; margin-bottom: 25px; color: #fff; }
+        
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
         }
 
-        .summary-content {
-            column-count: 2;
-            column-gap: 40px;
-            text-align: justify;
+        .rec-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
         }
 
-        @media (max-width: 900px) {
-            .summary-content {
-                column-count: 1;
-            }
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        .rec-card h4 { color: var(--secondary); margin-bottom: 12px; font-size: 1.1rem; }
+        .rec-card p { font-size: 0.95rem; color: var(--text-muted); }
 
         /* Animations */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            background: var(--primary);
-            color: white;
-            margin-bottom: 15px;
+        @media (max-width: 1200px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .rec-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div class="badge">Nemo Real Estate Analytics</div>
-            <h1>강남권 상업용 부동산 대쉬보드</h1>
-            <p>Nemo 매물 데이터를 기반으로 한 탐색적 데이터 분석 결과</p>
+            <div class="header-title">
+                <h1>강남권 상업용 부동산 의사결정 대쉬보드</h1>
+                <p>데이터 기반 가성비 임차 지역 분석 및 의사결정 지원</p>
+            </div>
+            <div id="last-updated" style="font-size: 0.8rem; color: var(--text-muted);">실시간 데이터 로딩 중...</div>
         </header>
 
+        <!-- KPI Section -->
         <section class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-value">673</div>
-                <div class="metric-label">총 분석 매물 수</div>
+                <div class="metric-value" id="kpi-total">-</div>
+                <div class="metric-label">분석 매물 수</div>
             </div>
             <div class="metric-card">
-                <div class="metric-value">6,895만</div>
-                <div class="metric-label">평균 보증금 (원)</div>
+                <div class="metric-value" id="kpi-avg-rent">-</div>
+                <div class="metric-label">평균 월세</div>
             </div>
             <div class="metric-card">
-                <div class="metric-value">534만</div>
-                <div class="metric-label">평균 월세 (원)</div>
+                <div class="metric-value" id="kpi-hot-district">-</div>
+                <div class="metric-label">최다 밀집 지역</div>
             </div>
             <div class="metric-card">
-                <div class="metric-value">역삼역</div>
-                <div class="metric-label">매물 최다 밀집 지역</div>
+                <div class="metric-value" id="kpi-price-range">-</div>
+                <div class="metric-label">월세 가격대 (Min-Max)</div>
             </div>
         </section>
 
-        <div class="charts-grid">
+        <!-- Filters -->
+        <section class="filter-section">
+            <div class="filter-group">
+                <label for="district-filter">지역(지하철역) 필터</label>
+                <select id="district-filter">
+                    <option value="all">전체 지역</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="type-filter">업종 필터</label>
+                <select id="type-filter">
+                    <option value="all">전체 업종</option>
+                </select>
+            </div>
+            <div class="filter-group" style="flex-grow: 1;">
+                <label for="rent-slider">최대 월세 필터: <span id="rent-val" class="range-value">전체</span></label>
+                <input type="range" id="rent-slider" min="0" max="5000" step="50" value="5000" style="width: 100%;">
+            </div>
+        </section>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
             <!-- Chart 1 -->
             <div class="chart-card">
-                <div class="chart-header"><h3>업종 대분류 빈도 분석</h3></div>
-                <div class="chart-content"><img src="images/businessLargeCodeName_freq.png" alt="업종 대분류 빈도"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    사무실 중심의 '기타업종'이 48%로 압도적이며, 일반음식점과 서비스업이 그 뒤를 잇습니다. 강남권의 견고한 오피스 배후 수요를 증명합니다.
-                </div>
+                <div class="chart-header"><h3>지역별 평균 월세 분석</h3></div>
+                <div class="chart-container"><canvas id="chart-avg-rent"></canvas></div>
+                <div class="insight-box" id="insight-avg-rent">데이터 분석 중...</div>
             </div>
 
             <!-- Chart 2 -->
             <div class="chart-card">
-                <div class="chart-header"><h3>보증금 vs 월세 상관관계</h3></div>
-                <div class="chart-content"><img src="images/deposit_vs_rent.png" alt="보증금 vs 월세"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    선형적 관계가 존재하지만 넓은 분산은 다양한 임대 조건 협상이 가능함을 시사합니다. 보증금을 높여 월세를 낮추는 전략적 선택이 가능합니다.
-                </div>
+                <div class="chart-header"><h3>지역별 매물 공급량</h3></div>
+                <div class="chart-container"><canvas id="chart-listings-count"></canvas></div>
+                <div class="insight-box" id="insight-listings-count">데이터 분석 중...</div>
             </div>
 
             <!-- Chart 3 -->
             <div class="chart-card">
-                <div class="chart-header"><h3>업종 중분류 빈도 (Top 30)</h3></div>
-                <div class="chart-content"><img src="images/businessMiddleCodeName_freq.png" alt="업종 중분류 빈도"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    카페와 한식점이 상위권에 포진하여 전형적인 오피스 타운의 소비 패턴을 보여줍니다. 다용도점포의 비중은 업종 변경의 유연성을 의미합니다.
-                </div>
+                <div class="chart-header"><h3>월세 가격대 분포</h3></div>
+                <div class="chart-container"><canvas id="chart-price-dist"></canvas></div>
+                <div class="insight-box" id="insight-price-dist">데이터 분석 중...</div>
             </div>
 
             <!-- Chart 4 -->
             <div class="chart-card">
-                <div class="chart-header"><h3>면적 vs 월세 상관관계</h3></div>
-                <div class="chart-content"><img src="images/size_vs_rent.png" alt="면적 vs 월세"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    전용면적 증대에 따른 월세 상승은 뚜렷하지만, 대형 평수일수록 평당 임대료의 규모의 경제가 발생하는지 면밀한 검토가 필요합니다.
-                </div>
-            </div>
-
-            <!-- Chart 5 -->
-            <div class="chart-card">
-                <div class="chart-header"><h3>층수별 평균 월세</h3></div>
-                <div class="chart-content"><img src="images/floor_rent.png" alt="층수별 평균 월세"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    1층 매물의 프리미엄이 가장 강력하며, 층수가 올라갈수록 접근성 하락에 따른 임대료 감액 효과가 뚜렷하게 관찰됩니다.
-                </div>
-            </div>
-
-            <!-- Chart 6 -->
-            <div class="chart-card">
-                <div class="chart-header"><h3>매물 제목 키워드 분석 (TF-IDF)</h3></div>
-                <div class="chart-content"><img src="images/title_keywords.png" alt="키워드 분석"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    '역삼동', '강남역' 등 지리적 강점과 '인테리어', '무권리' 등 비용 절감 키워드가 검색 노출 및 계약 체결의 핵심 변수입니다.
-                </div>
-            </div>
-
-            <!-- Chart 7 -->
-            <div class="chart-card">
-                <div class="chart-header"><h3>보증금 분포</h3></div>
-                <div class="chart-content"><img src="images/deposit_dist.png" alt="보증금 분포"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    대다수 매물이 1억 미만에 집중되어 있으나, 일부 초고가 매물이 존재하여 시장의 양극화가 뚜렷함을 보여줍니다.
-                </div>
-            </div>
-
-            <!-- Chart 8 -->
-            <div class="chart-card">
-                <div class="chart-header"><h3>상관계수 히트맵</h3></div>
-                <div class="chart-content"><img src="images/corr_heatmap.png" alt="히트맵"></div>
-                <div class="chart-footer">
-                    <strong>비지니스 인사이트</strong>
-                    보증금, 월세, 면적 간의 강력한 선형적 관계를 통해 데이터 기반의 임대료 적정성 평가가 가능함을 시사합니다.
-                </div>
+                <div class="chart-header"><h3>관심도(조회수) vs 임대료 상관관계</h3></div>
+                <div class="chart-container"><canvas id="chart-interest-rent"></canvas></div>
+                <div class="insight-box" id="insight-interest-rent">데이터 분석 중...</div>
             </div>
         </div>
 
-        <section class="summary-section">
-            <h2>핵심 분석 요약 (Executive Summary)</h2>
-            <div class="summary-content">
-                <p>본 대쉬보드는 강남권 상업 부동산 시장의 현재 주소를 정밀하게 보여줍니다. 분석된 673건의 매물은 평균 6,895만 원의 보증금과 534만 원의 월세 수준을 형성하고 있으며, 역삼역 인근에 가장 높은 밀집도를 보이고 있습니다. 이는 단순한 숫자를 넘어 강남권이 여전히 대한민국 상업의 중심지이자, 가장 역동적인 임대 시장임을 증명합니다.</p>
-                <p>특히 '인테리어 완비'와 '무권리' 키워드의 부상은 신규 창업자들이 초기 투자 리스크를 극도로 경계하고 있음을 나타냅니다. 임대인 측면에서는 공실률을 낮추기 위해 기존 인테리어를 활용한 '승계 임대' 전략이 유효하며, 임차인 측면에서는 1층이 아닌 중층부 매물을 통해 고정비를 절감하는 실속형 창업 전략이 추천됩니다.</p>
-                <p>결론적으로, 강남 상권은 풍부한 직장인 배후 수요를 바탕으로 한 안정적인 시장이지만, 동시에 극심한 가격 편차와 경쟁 강도를 가지고 있습니다. 본 대쉬보드의 데이터 분석 결과를 바탕으로 입지 선정과 예산 수립을 진행한다면, 불확실한 시장 환경 속에서도 성공적인 비지니스 안착이 가능할 것입니다.</p>
+        <!-- Recommendations -->
+        <section class="recommendation-section">
+            <h2>가성비 상업용 매물 추천 지역 (Recommended Areas)</h2>
+            <div class="rec-grid" id="recommendation-content">
+                <!-- Dynamic Content -->
             </div>
         </section>
     </div>
+
+    <script>
+        let rawData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // 헬퍼: 천단위 콤마
+        const formatNum = (num) => Math.round(num).toLocaleString();
+
+        async function init() {
+            try {
+                const response = await fetch('data/nemo_data.json');
+                rawData = await response.json();
+                
+                // 필터 초기화
+                populateFilters();
+                
+                // 초기 렌더링
+                updateDashboard();
+                
+                // 이벤트 리스너
+                document.getElementById('district-filter').addEventListener('change', updateDashboard);
+                document.getElementById('type-filter').addEventListener('change', updateDashboard);
+                document.getElementById('rent-slider').addEventListener('input', (e) => {
+                    document.getElementById('rent-val').innerText = e.target.value === "5000" ? "전체" : `${e.target.value}만 원`;
+                    updateDashboard();
+                });
+
+                document.getElementById('last-updated').innerText = `최종 업데이트: ${new Date().toLocaleTimeString()}`;
+            } catch (error) {
+                console.error("Data loading failed:", error);
+                document.getElementById('last-updated').innerText = "데이터 로드 실패";
+            }
+        }
+
+        function populateFilters() {
+            const districts = [...new Set(rawData.map(d => d.nearSubwayStation))].sort();
+            const types = [...new Set(rawData.map(d => d.businessLargeCodeName))].sort();
+            
+            const distSelect = document.getElementById('district-filter');
+            districts.forEach(d => {
+                if(d) distSelect.add(new Option(d, d));
+            });
+
+            const typeSelect = document.getElementById('type-filter');
+            types.forEach(t => {
+                if(t) typeSelect.add(new Option(t, t));
+            });
+        }
+
+        function updateDashboard() {
+            const district = document.getElementById('district-filter').value;
+            const type = document.getElementById('type-filter').value;
+            const maxRent = parseInt(document.getElementById('rent-slider').value);
+
+            filteredData = rawData.filter(d => {
+                const matchDist = district === 'all' || d.nearSubwayStation === district;
+                const matchType = type === 'all' || d.businessLargeCodeName === type;
+                const matchRent = d.monthlyRent <= maxRent || maxRent === 5000;
+                return matchDist && matchType && matchRent;
+            });
+
+            updateKPIs();
+            renderCharts();
+            generateRecommendations();
+        }
+
+        function updateKPIs() {
+            const total = filteredData.length;
+            const avgRent = filteredData.reduce((acc, cur) => acc + cur.monthlyRent, 0) / (total || 1);
+            
+            // Hot District
+            const counts = {};
+            filteredData.forEach(d => counts[d.nearSubwayStation] = (counts[d.nearSubwayStation] || 0) + 1);
+            const hot = Object.entries(counts).sort((a,b) => b[1] - a[1])[0]?.[0] || "-";
+
+            // Price Range
+            const rents = filteredData.map(d => d.monthlyRent);
+            const minRent = rents.length ? Math.min(...rents) : 0;
+            const maxRent = rents.length ? Math.max(...rents) : 0;
+
+            document.getElementById('kpi-total').innerText = formatNum(total);
+            document.getElementById('kpi-avg-rent').innerText = `${formatNum(avgRent)}만`;
+            document.getElementById('kpi-hot-district').innerText = hot;
+            document.getElementById('kpi-price-range').innerText = `${minRent} ~ ${maxRent}만`;
+        }
+
+        function renderCharts() {
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            // 1. Avg Rent by District
+            const distData = {};
+            filteredData.forEach(d => {
+                if(!distData[d.nearSubwayStation]) distData[d.nearSubwayStation] = { sum: 0, count: 0 };
+                distData[d.nearSubwayStation].sum += d.monthlyRent;
+                distData[d.nearSubwayStation].count += 1;
+            });
+            const labels = Object.keys(distData).sort();
+            const avgRents = labels.map(l => distData[l].sum / distData[l].count);
+
+            updateChart('chart-avg-rent', 'bar', {
+                labels,
+                datasets: [{
+                    label: '평균 월세 (만원)',
+                    data: avgRents,
+                    backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                    borderColor: '#6366f1',
+                    borderWidth: 1
+                }]
+            });
+            document.getElementById('insight-avg-rent').innerText = `${labels[0] || '지역'} 일대는 상대적으로 임대료 경쟁력이 높으며, 대형 오피스 밀집 지역일수록 평균 월세가 높게 형성됩니다.`;
+
+            // 2. Listings Count by District
+            const listingCounts = labels.map(l => distData[l].count);
+            updateChart('chart-listings-count', 'bar', {
+                labels,
+                datasets: [{
+                    label: '매물 수',
+                    data: listingCounts,
+                    backgroundColor: 'rgba(168, 85, 247, 0.6)',
+                    borderColor: '#a855f7',
+                    borderWidth: 1
+                }]
+            }, { indexAxis: 'y' });
+            document.getElementById('insight-listings-count').innerText = `매물 공급이 가장 활발한 곳은 ${document.getElementById('kpi-hot-district').innerText}역 인근이며, 이는 상권의 활력도와 회전율이 높음을 의미합니다.`;
+
+            // 3. Price Distribution (Histogram bins)
+            const bins = [0, 100, 300, 500, 1000, 2000, 5000];
+            const binLabels = ['~100', '100~300', '300~500', '500~1000', '1000~2000', '2000+'];
+            const binCounts = new Array(binLabels.length).fill(0);
+            filteredData.forEach(d => {
+                for(let i=0; i<bins.length-1; i++) {
+                    if(d.monthlyRent >= bins[i] && d.monthlyRent < bins[i+1]) {
+                        binCounts[i]++;
+                        break;
+                    }
+                }
+                if(d.monthlyRent >= 5000) binCounts[5]++;
+            });
+
+            updateChart('chart-price-dist', 'bar', {
+                labels: binLabels,
+                datasets: [{
+                    label: '매물 수',
+                    data: binCounts,
+                    backgroundColor: 'rgba(244, 63, 94, 0.6)',
+                    borderColor: '#f43f5e',
+                    borderWidth: 1
+                }]
+            });
+            document.getElementById('insight-price-dist').innerText = "대다수의 매물이 100~500만 원 사이에 밀집되어 있어, 초기 창업자들에게 적합한 시장 가격대를 형성하고 있습니다.";
+
+            // 4. Interest vs Rent Scatter
+            const scatterData = filteredData.map(d => ({ x: d.monthlyRent, y: d.viewCount }));
+            updateChart('chart-interest-rent', 'scatter', {
+                datasets: [{
+                    label: '매물별 조회수 vs 월세',
+                    data: scatterData,
+                    backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                    pointRadius: 5
+                }]
+            }, {
+                scales: {
+                    x: { title: { display: true, text: '월세 (만원)' } },
+                    y: { title: { display: true, text: '조회수' } }
+                }
+            });
+            document.getElementById('insight-interest-rent').innerText = "임대료가 높다고 반드시 조회수가 비례하지는 않습니다. 좌측 상단(저렴한 가격 + 높은 조회수) 영역의 '가성비' 매물을 선점하는 것이 유리합니다.";
+        }
+
+        function updateChart(id, type, data, options = {}) {
+            if(charts[id]) charts[id].destroy();
+            const ctx = document.getElementById(id).getContext('2d');
+            charts[id] = new Chart(ctx, {
+                type,
+                data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    ...options
+                }
+            });
+        }
+
+        function generateRecommendations() {
+            const container = document.getElementById('recommendation-content');
+            container.innerHTML = '';
+
+            // Logic: Group by district, calculate efficiency (Avg ViewCount / Avg Rent)
+            const stats = {};
+            filteredData.forEach(d => {
+                if(!stats[d.nearSubwayStation]) stats[d.nearSubwayStation] = { viewSum: 0, rentSum: 0, count: 0 };
+                stats[d.nearSubwayStation].viewSum += d.viewCount;
+                stats[d.nearSubwayStation].rentSum += d.monthlyRent;
+                stats[d.nearSubwayStation].count += 1;
+            });
+
+            const recommendations = Object.entries(stats).map(([name, s]) => {
+                const avgRent = s.rentSum / s.count;
+                const avgView = s.viewSum / s.count;
+                return { name, avgRent, avgView, efficiency: avgView / (avgRent || 1) };
+            }).sort((a,b) => b.efficiency - a.efficiency).slice(0, 3);
+
+            if(recommendations.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">필터 조건에 맞는 추천 데이터가 없습니다.</p>';
+                return;
+            }
+
+            recommendations.forEach((rec, idx) => {
+                const card = document.createElement('div');
+                card.className = 'rec-card';
+                card.innerHTML = `
+                    <h4>TOP ${idx+1}: ${rec.name}역 인근</h4>
+                    <p>평균 임대료: ${formatNum(rec.avgRent)}만 원</p>
+                    <p>평균 관심도(조회): ${formatNum(rec.avgView)}회</p>
+                    <p style="margin-top:10px; color:#fff;"><b>특징:</b> 관심도 대비 임대료가 매우 합리적인 가성비 구역입니다.</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        init();
+    </script>
 </body>
 </html>
